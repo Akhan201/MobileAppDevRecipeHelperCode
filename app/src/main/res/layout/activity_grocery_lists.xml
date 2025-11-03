@@ -1,0 +1,60 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <!-- Simple Toolbar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:orientation="horizontal"
+        android:background="#6200EE"
+        android:gravity="center"
+        android:paddingStart="15dp"
+        android:paddingEnd="15dp">
+
+        <TextView
+            android:id="@+id/Title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Grocery Lists"
+            android:textSize="20sp"
+            android:textColor="#FFFFFF" />
+
+    </LinearLayout>
+
+    <!-- the List Input-->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="15dp"
+        android:gravity="center_vertical">
+
+        <EditText
+            android:id="@+id/NewListName"
+            android:layout_width="280dp"
+            android:layout_height="50dp"
+            android:hint="Enter list name..."
+            android:inputType="text"
+            android:padding="12dp"
+            android:background="#FFFFFF"
+            android:layout_marginEnd="8dp" />
+
+        <Button
+            android:id="@+id/AddList"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:text="Add"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#6200EE" />
+    </LinearLayout>
+
+    <!-- Lists ListView -->
+    <ListView
+        android:id="@+id/ViewLists"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="8dp" />
+
+</LinearLayout>
