@@ -23,6 +23,7 @@ class LoginActivity : AppCompatActivity() {
         val emailField = findViewById<EditText>(R.id.editTextEmail)
         val passwordField = findViewById<EditText>(R.id.editTextPassword)
         val loginButton = findViewById<Button>(R.id.btnLogin)
+        val signUpLink = findViewById<TextView>(R.id.tvSignUpLink)
 
         loginButton.setOnClickListener {
             val email = emailField.text.toString().trim()
@@ -33,6 +34,9 @@ class LoginActivity : AppCompatActivity() {
             } else {
                 loginUser(email, password)
             }
+        }
+         signUpLink.setOnClickListener {
+            startActivity(Intent(this, SignUpActivity::class.java))
         }
     }
 
