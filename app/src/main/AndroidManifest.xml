@@ -43,6 +43,16 @@
         <activity
             android:name=".NearbyGroceryStoresMaps"
             android:exported="false" />
+          <!-- Sign Up Screen -->
+        <activity
+            android:name=".SignUpActivity"
+            android:exported="false" />
+
+        <!-- Recipe Detail Screen -->
+        <activity
+            android:name=".RecipeDetailActivity"
+            android:exported="false" />
+
 
     </application>
 
