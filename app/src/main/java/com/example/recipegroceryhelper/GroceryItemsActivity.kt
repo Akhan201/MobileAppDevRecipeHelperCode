@@ -27,8 +27,6 @@ class GroceryItemsActivity : AppCompatActivity() {
     data class GroceryItem(
         val id: String = "",
         val name: String = "",
-        val isChecked: Boolean = false,
-        val timestamp: Long = 0,
         val imageUrl: String = ""
     )
 
@@ -41,14 +39,6 @@ class GroceryItemsActivity : AppCompatActivity() {
     private var groceryListName: String = ""
     private var photoUri: Uri? = null
 
-    // Permission launcher
-    private val permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        if (granted) {
-            launchCamera()
-        } else {
-            Toast.makeText(this, "Camera permission needed", Toast.LENGTH_SHORT).show()
-        }
-    }
 
     // Camera launcher
     private val cameraLauncher = registerForActivityResult(ActivityResultContracts.TakePicture()) { photoTaken ->
@@ -68,30 +58,25 @@ class GroceryItemsActivity : AppCompatActivity() {
         groceryListId = intent.getStringExtra("LIST_ID") ?: ""
         groceryListName = intent.getStringExtra("LIST_NAME") ?: "Grocery List"
 
-        if (groceryListId.isEmpty()) {
-            Toast.makeText(this, "Error loading list", Toast.LENGTH_SHORT).show()
-            finish()
-            return
-        }
 
         setupViews()
-        fetchItems()
+        getItems()
     }
 
     private fun setupViews() {
-        val titleText = findViewById<TextView>(R.id.ListTitle)
+        val groceryItemText = findViewById<TextView>(R.id.Title)
         val itemInput = findViewById<EditText>(R.id.NewItem)
-        val addButton = findViewById<Button>(R.id.AddItem)
-        val photoButton = findViewById<Button>(R.id.BtnCaptureImage)
-        val backButton = findViewById<Button>(R.id.BtnBack)
+        val addItemButton = findViewById<Button>(R.id.AddItem)
+        val takePhotoButton = findViewById<Button>(R.id.TakeImage)
+        val backButton = findViewById<Button>(R.id.Back)
         val itemsList = findViewById<ListView>(R.id.Items)
 
-        titleText.text = groceryListName
+        groceryItemText.text = groceryListName
 
-        itemAdapter = GroceryItemAdapter(this, items, ::toggleItemCheck, ::removeItem)
+        itemAdapter = GroceryItemAdapter(this, items, ::removeItem)
         itemsList.adapter = itemAdapter
 
-        addButton.setOnClickListener {
+        addItemButton.setOnClickListener {
             val itemText = itemInput.text.toString().trim()
             if (itemText.isNotEmpty()) {
                 saveItem(itemText, "")
@@ -101,28 +86,12 @@ class GroceryItemsActivity : AppCompatActivity() {
             }
         }
 
-        photoButton.setOnClickListener {
-            val itemText = itemInput.text.toString().trim()
-            if (itemText.isNotEmpty()) {
-                checkPermissionAndOpenCamera()
-            } else {
-                Toast.makeText(this, "Enter item name first", Toast.LENGTH_SHORT).show()
-            }
+        takePhotoButton.setOnClickListener {
+            launchCamera()
         }
 
         backButton.setOnClickListener {
             finish()
-        }
-    }
-
-    private fun checkPermissionAndOpenCamera() {
-        when {
-            ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED -> {
-                launchCamera()
-            }
-            else -> {
-                permissionLauncher.launch(Manifest.permission.CAMERA)
-            }
         }
     }
 
@@ -138,10 +107,8 @@ class GroceryItemsActivity : AppCompatActivity() {
 
     private fun saveItemWithPhoto() {
         val userId = auth.currentUser?.uid ?: return
-        val itemText = findViewById<EditText>(R.id.NewItem).text.toString().trim()
+        val groceryItemText = findViewById<EditText>(R.id.NewItem).text.toString().trim()
         val imageUri = photoUri ?: return
-
-        Toast.makeText(this, "Uploading...", Toast.LENGTH_SHORT).show()
 
         val imageName = "item_${System.currentTimeMillis()}.jpg"
         val imageRef = storage.reference
@@ -150,14 +117,12 @@ class GroceryItemsActivity : AppCompatActivity() {
         imageRef.putFile(imageUri)
             .addOnSuccessListener {
                 imageRef.downloadUrl.addOnSuccessListener { url ->
-                    saveItem(itemText, url.toString())
+                    saveItem(groceryItemText, url.toString())
                     findViewById<EditText>(R.id.NewItem).text.clear()
                     Toast.makeText(this, "Item saved", Toast.LENGTH_SHORT).show()
                 }
             }
-            .addOnFailureListener {
-                Toast.makeText(this, "Upload failed", Toast.LENGTH_SHORT).show()
-            }
+
     }
 
     private fun saveItem(itemText: String, photoUrl: String) {
@@ -167,23 +132,16 @@ class GroceryItemsActivity : AppCompatActivity() {
         val newItem = GroceryItem(
             id = itemKey,
             name = itemText,
-            isChecked = false,
-            timestamp = System.currentTimeMillis(),
             imageUrl = photoUrl
         )
 
         database.reference
             .child("users/$userId/groceryLists/$groceryListId/items/$itemKey")
             .setValue(newItem)
-            .addOnSuccessListener {
-                Toast.makeText(this, "Added", Toast.LENGTH_SHORT).show()
-            }
-            .addOnFailureListener {
-                Toast.makeText(this, "Failed to add", Toast.LENGTH_SHORT).show()
-            }
+
     }
 
-    private fun fetchItems() {
+    private fun getItems() {
         val userId = auth.currentUser?.uid ?: return
 
         database.reference
@@ -197,38 +155,18 @@ class GroceryItemsActivity : AppCompatActivity() {
                             items.add(item)
                         }
                     }
-                    items.sortWith(compareBy<GroceryItem> { it.isChecked }.thenByDescending { it.timestamp })
+
                     itemAdapter.notifyDataSetChanged()
                 }
 
-                override fun onCancelled(error: DatabaseError) {
-                    Toast.makeText(this@GroceryItemsActivity, "Load failed", Toast.LENGTH_SHORT).show()
-                }
+                override fun onCancelled(error: DatabaseError) {}
             })
-    }
-
-    private fun toggleItemCheck(item: GroceryItem, checked: Boolean) {
-        val userId = auth.currentUser?.uid ?: return
-        database.reference
-            .child("users/$userId/groceryLists/$groceryListId/items/${item.id}/isChecked")
-            .setValue(checked)
     }
 
     private fun removeItem(item: GroceryItem) {
         val userId = auth.currentUser?.uid ?: return
-
-        android.app.AlertDialog.Builder(this)
-            .setTitle("Delete")
-            .setMessage("Remove ${item.name}?")
-            .setPositiveButton("Yes") { _, _ ->
-                database.reference
-                    .child("users/$userId/groceryLists/$groceryListId/items/${item.id}")
-                    .removeValue()
-                    .addOnSuccessListener {
-                        Toast.makeText(this, "Deleted", Toast.LENGTH_SHORT).show()
-                    }
-            }
-            .setNegativeButton("No", null)
-            .show()
+        database.reference
+            .child("users/$userId/groceryLists/$groceryListId/items/${item.id}")
+            .removeValue()
     }
 }

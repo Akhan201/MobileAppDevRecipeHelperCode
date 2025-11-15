@@ -14,8 +14,7 @@ import com.bumptech.glide.Glide
 class GroceryItemAdapter(
     context: Context,
     private val itemsList: List<GroceryItemsActivity.GroceryItem>,
-    private val onCheckChange: (GroceryItemsActivity.GroceryItem, Boolean) -> Unit,
-    private val onDelete: (GroceryItemsActivity.GroceryItem) -> Unit
+       private val onDelete: (GroceryItemsActivity.GroceryItem) -> Unit
 ) : ArrayAdapter<GroceryItemsActivity.GroceryItem>(context, 0, itemsList) {
 
     override fun getView(position: Int, oldView: View?, parent: ViewGroup): View {
@@ -23,11 +22,11 @@ class GroceryItemAdapter(
         val itemView = oldView ?: LayoutInflater.from(context)
             .inflate(R.layout.item_grocery, parent, false)
 
-        val nameText = itemView.findViewById<TextView>(R.id.tvItemName)
-        val deleteBtn = itemView.findViewById<ImageButton>(R.id.btnDeleteItem)
-        val photoView = itemView.findViewById<ImageView>(R.id.ivItemImage)
+        val itemText = itemView.findViewById<TextView>(R.id.itemName)
+        val deleteButton = itemView.findViewById<ImageButton>(R.id.deleteItemButton)
+        val photoView = itemView.findViewById<ImageView>(R.id.itemImage)
 
-        nameText.text = currentItem.name
+        itemText.text = currentItem.name
 
         // Show photo if exists
         if (currentItem.imageUrl.isNotEmpty()) {
@@ -42,7 +41,7 @@ class GroceryItemAdapter(
 
 
 
-        deleteBtn.setOnClickListener {
+        deleteButton.setOnClickListener {
             onDelete(currentItem)
         }
 

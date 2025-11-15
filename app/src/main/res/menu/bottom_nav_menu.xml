@@ -9,7 +9,7 @@
 
     <item
         android:id="@+id/nav_grocery"
-        android:title="Grocery"
+        android:title="Grocery List"
         android:icon="@drawable/ic_launcher_foreground" />
 
     <item

@@ -1,84 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:fitsSystemWindows="true">
+    android:layout_height="match_parent">
 
     <!-- Toolbar -->
-    <LinearLayout
+    <TextView
+        android:id="@+id/Title"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:orientation="horizontal"
-        android:background="#6200EE"
+        android:background="#FF9800"
         android:gravity="center"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp">
+        android:text="My Grocery Lists"
+        android:textColor="#FFFFFF"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-            android:id="@+id/Title"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="My Grocery Lists"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:textColor="#FFFFFF" />
+    <!-- Add List Input -->
+    <EditText
+        android:id="@+id/NewListName"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
+        android:background="@android:color/white"
+        android:hint="Enter list name..."
+        android:inputType="text"
+        android:padding="12dp"
+        app:layout_constraintEnd_toStartOf="@id/AddList"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/Title" />
 
-    </LinearLayout>
+    <!-- Add Button -->
+    <Button
+        android:id="@+id/AddList"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:backgroundTint="#FF9800"
+        android:text="Add"
+        android:textColor="#FFFFFF"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/Title" />
 
-    <!-- Add List Section -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="16dp"
-        android:background="#F5F5F5"
-        android:gravity="center_vertical">
-
-        <EditText
-            android:id="@+id/NewListName"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="50dp"
-            android:hint="Enter list name..."
-            android:inputType="text"
-            android:padding="12dp"
-            android:background="@android:color/white"
-            android:layout_marginEnd="8dp" />
-
-        <Button
-            android:id="@+id/AddList"
-            android:layout_width="wrap_content"
-            android:layout_height="50dp"
-            android:text="Add"
-            android:textColor="#FFFFFF"
-            android:backgroundTint="#6200EE" />
-    </LinearLayout>
-
-    <!-- Divider -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="#E0E0E0" />
-
-    <!-- Instructions Text -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Tap a list to view items • Long press to delete"
-        android:textSize="12sp"
-        android:textColor="#666666"
-        android:padding="8dp"
-        android:gravity="center" />
-
-    <!-- Lists ListView -->
+    <!-- ListView -->
     <ListView
         android:id="@+id/ViewLists"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:padding="8dp"
+        android:layout_marginTop="16dp"
         android:divider="#E0E0E0"
-        android:dividerHeight="1dp" />
+        android:dividerHeight="1dp"
+        android:padding="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/NewListName" />
 
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

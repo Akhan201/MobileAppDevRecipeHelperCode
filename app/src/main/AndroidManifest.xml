@@ -41,9 +41,7 @@
             android:name=".MainActivity"
             android:exported="false" />
 
-        <activity
-            android:name=".GroceryListsActivity"
-            android:exported="false" />
+
         
           <!-- Sign Up Screen -->
         <activity
@@ -57,12 +55,9 @@
         <activity
             android:name=".GroceryItemsActivity"
             android:exported="false"
-            android:parentActivityName=".GroceryListsActivity"
+            android:parentActivityName=".MainActivity"
             android:label="Grocery Items" />
 
-        <activity
-            android:name=".NearbyGroceryStoresMaps"
-            android:exported="true" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

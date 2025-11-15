@@ -10,28 +10,25 @@ import android.widget.TextView
 
 class GroceryListAdapter(
     context: Context,
-    private val lists: List<GroceryListsActivity.GroceryList>,
-    private val onListClicked: (GroceryListsActivity.GroceryList) -> Unit,
-    private val onListDeleted: (GroceryListsActivity.GroceryList) -> Unit
-) : ArrayAdapter<GroceryListsActivity.GroceryList>(context, 0, lists) {
+    private val lists: List<GroceryListsFragment.GroceryList>,
+    private val onListClicked: (GroceryListsFragment.GroceryList) -> Unit,
+    private val onListDeleted: (GroceryListsFragment.GroceryList) -> Unit
+) : ArrayAdapter<GroceryListsFragment.GroceryList>(context, 0, lists) {
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val list = lists[position]
         val view = convertView ?: LayoutInflater.from(context)
             .inflate(R.layout.item_grocery_list, parent, false)
 
-        val tvListName = view.findViewById<TextView>(R.id.tvListName)
-        val btnDelete = view.findViewById<ImageButton>(R.id.btnDeleteList)
+        val groceryListName = view.findViewById<TextView>(R.id.listName)
+        val deleteButton = view.findViewById<ImageButton>(R.id.deleteList)
 
-        // Set list name
-        tvListName.text = list.name
+        groceryListName.text = list.name
 
-        // Delete button listener
-        btnDelete.setOnClickListener {
+        deleteButton.setOnClickListener {
             onListDeleted(list)
         }
 
-        // Click on list to open items
         view.setOnClickListener {
             onListClicked(list)
         }

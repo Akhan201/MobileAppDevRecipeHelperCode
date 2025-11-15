@@ -1,42 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
     android:padding="12dp"
-    android:gravity="center_vertical"
-    android:background="?android:attr/selectableItemBackground">
+    >
 
-    <!-- ADDED: ImageView for item photo -->
+    <!-- ImageView for item photo -->
     <ImageView
-        android:id="@+id/ivItemImage"
+        android:id="@+id/itemImage"
         android:layout_width="60dp"
         android:layout_height="60dp"
-        android:scaleType="centerCrop"
         android:layout_marginEnd="12dp"
+        android:contentDescription="Item photo"
+        android:scaleType="centerCrop"
         android:visibility="gone"
-        android:contentDescription="Item photo" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <!-- Item Name -->
     <TextView
-        android:id="@+id/tvItemName"
+        android:id="@+id/itemName"
         android:layout_width="0dp"
-        android:layout_weight="1"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
         android:text="Grocery Item"
-        android:textSize="16sp"
         android:textColor="#000000"
-        android:layout_marginEnd="8dp" />
+        android:textSize="16sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/deleteItemButton"
+        app:layout_constraintStart_toEndOf="@id/itemImage"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <!-- Delete Button -->
     <ImageButton
-        android:id="@+id/btnDeleteItem"
+        android:id="@+id/deleteItemButton"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:src="@android:drawable/ic_menu_delete"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:contentDescription="Delete item"
+        android:src="@android:drawable/ic_menu_delete"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         app:tint="#999999" />
 
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

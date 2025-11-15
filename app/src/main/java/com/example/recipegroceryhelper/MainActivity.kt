@@ -28,15 +28,12 @@ class MainActivity : AppCompatActivity() {
 
                 // Case for the Grocery List tab
                 R.id.nav_grocery -> {
-                    // Use the correct Activity name: GroceryListsActivity
-                    startActivity(Intent(this, GroceryListsActivity::class.java))
+                    loadFragment(GroceryListsFragment())
                     true
                 }
 
-                // Case for the Maps tab
                 R.id.nav_maps -> {
-                    // Use the correct Activity name: NearbyGroceryStoresMaps
-                    startActivity(Intent(this, NearbyGroceryStoresMaps::class.java))
+                    loadFragment( NearbyGroceryStoresMapsFragment())
                     true
                 }
 
