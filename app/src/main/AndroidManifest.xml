@@ -7,6 +7,9 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <!-- The "com.google.android.maps" permission is obsolete and removed -->
 
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -15,13 +18,13 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.MoblieProject"
+        android:theme="@style/Theme.RecipeGroceryHelper"
         tools:targetApi="31">
 
         <!-- *** THIS IS THE CORRECTED API KEY TAG *** -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyAZPtrSU1cekYlXqT_-iTKYKLHVVqjp2VU" />
+            android:value="AIzaSyBkWalcuxSd2vw5aBh6l1QhmSshiPMjIlA" />
 
         <!-- LoginActivity is the starting point of the app -->
         <activity
@@ -37,6 +40,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="false" />
+
         <activity
             android:name=".GroceryListsActivity"
             android:exported="false" />
@@ -47,12 +51,28 @@
             android:exported="false" />
 
         <!-- Recipe Detail Screen -->
+
+
+        <!-- NEW: Activity for managing items within a grocery list -->
         <activity
-            android:name=".RecipeDetailActivity"
-            android:exported="false" />
+            android:name=".GroceryItemsActivity"
+            android:exported="false"
+            android:parentActivityName=".GroceryListsActivity"
+            android:label="Grocery Items" />
+
         <activity
             android:name=".NearbyGroceryStoresMaps"
             android:exported="true" />
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
 
     </application>
 

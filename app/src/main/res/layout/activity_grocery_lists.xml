@@ -1,44 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:fitsSystemWindows="true">
 
-    <!-- Simple Toolbar -->
+    <!-- Toolbar -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="56dp"
         android:orientation="horizontal"
         android:background="#6200EE"
         android:gravity="center"
-        android:paddingStart="15dp"
-        android:paddingEnd="15dp">
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
 
         <TextView
             android:id="@+id/Title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Grocery Lists"
+            android:text="My Grocery Lists"
             android:textSize="20sp"
+            android:textStyle="bold"
             android:textColor="#FFFFFF" />
 
     </LinearLayout>
 
-    <!-- the List Input-->
+    <!-- Add List Section -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="15dp"
+        android:padding="16dp"
+        android:background="#F5F5F5"
         android:gravity="center_vertical">
 
         <EditText
             android:id="@+id/NewListName"
-            android:layout_width="280dp"
+            android:layout_width="0dp"
+            android:layout_weight="1"
             android:layout_height="50dp"
             android:hint="Enter list name..."
             android:inputType="text"
             android:padding="12dp"
-            android:background="#FFFFFF"
+            android:background="@android:color/white"
             android:layout_marginEnd="8dp" />
 
         <Button
@@ -50,11 +55,30 @@
             android:backgroundTint="#6200EE" />
     </LinearLayout>
 
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#E0E0E0" />
+
+    <!-- Instructions Text -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Tap a list to view items • Long press to delete"
+        android:textSize="12sp"
+        android:textColor="#666666"
+        android:padding="8dp"
+        android:gravity="center" />
+
     <!-- Lists ListView -->
     <ListView
         android:id="@+id/ViewLists"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="8dp" />
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="8dp"
+        android:divider="#E0E0E0"
+        android:dividerHeight="1dp" />
 
 </LinearLayout>

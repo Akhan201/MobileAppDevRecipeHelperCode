@@ -1,14 +1,14 @@
 {
   "project_info": {
-    "project_number": "334142490093",
-    "firebase_url": "https://recipeapp-a1e99-default-rtdb.firebaseio.com",
-    "project_id": "recipeapp-a1e99",
-    "storage_bucket": "recipeapp-a1e99.firebasestorage.app"
+    "project_number": "142374256357",
+    "firebase_url": "https://recipegroceryhelper-default-rtdb.firebaseio.com",
+    "project_id": "recipegroceryhelper",
+    "storage_bucket": "recipegroceryhelper.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:334142490093:android:b9b422e467656166ecd3e4",
+        "mobilesdk_app_id": "1:142374256357:android:dc8966c175981ae5f8de0c",
         "android_client_info": {
           "package_name": "com.example.recipegroceryhelper"
         }
@@ -16,7 +16,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAZPtrSU1cekYlXqT_-iTKYKLHVVqjp2VU"
+          "current_key": "AIzaSyBLbyMx9cdaxPjsOUwwhgBvs0zohoOSt2s"
         }
       ],
       "services": {

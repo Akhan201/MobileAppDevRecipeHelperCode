@@ -2,5 +2,5 @@
     <string name="app_name">MoblieProject</string>
     <string name="app_version">1.0.0</string>
     <string name="app_build">1</string>
-    <string name="google_map_key" translatable="false">AIzaSyAZPtrSU1cekYlXqT_-iTKYKLHVVqjp2VU</string>
+    <string name="google_map_key">AIzaSyBkWalcuxSd2vw5aBh6l1QhmSshiPMjIlA</string>
 </resources>
