@@ -14,12 +14,18 @@ class MainActivity : AppCompatActivity() {
 
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNavigation)
         // Load the default fragment when the activity starts
-        loadFragment(RecipesFragment())
+        loadFragment(HomeFragment())
 
         // *** THIS IS THE CORRECTED PART ***
         // Set up the listener with a correctly structured 'when' block.
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
+                // Case for the Home tab
+                R.id.navigation_home -> {
+                    loadFragment(HomeFragment())
+                    true
+                }
+
                 // Case for the Recipes tab
                 R.id.navigation_recipes -> {
                     loadFragment(RecipesFragment())

@@ -48,10 +48,7 @@
             android:name=".SignUpActivity"
             android:exported="false" />
 
-        <!-- Recipe Detail Screen -->
-      <activity
-            android:name=".RecipeDetailActivity"
-            android:exported="false" />
+
 
         <!-- NEW: Activity for managing items within a grocery list -->
         <activity

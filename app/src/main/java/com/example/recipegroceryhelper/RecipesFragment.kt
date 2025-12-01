@@ -1,160 +1,219 @@
 package com.example.recipegroceryhelper
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.*
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.search.SearchBar
-import com.google.android.material.search.SearchView
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
+import org.json.JSONObject
+import java.net.HttpURLConnection
+import java.net.URL
 
 class RecipesFragment : Fragment() {
 
-    // RecyclerView to display recipe cards in a grid layout
-    private lateinit var recyclerView: RecyclerView
+    private lateinit var searchBar: EditText
+    private lateinit var searchButton: Button
+    private lateinit var recipeGrid: GridView
+    private lateinit var detailView: View
 
-    // Adapter responsible for binding recipe data to the RecyclerView items
-    private lateinit var recipeAdapter: RecipeAdapter
+    private val recipes = mutableListOf<Recipe>()
 
-    // Material Design search bar at the top of the screen
-    private lateinit var searchBar: SearchBar
-
-    // The expanded search view that appears when the user clicks the search bar
-    private lateinit var searchView: SearchView
-
-    // Reference to the MealDB API interface
-    private val mealDbApi: MealDbApi
-
-    init {
-        // Build a Retrofit instance with the base URL of the MealDB API
-        val retrofit = Retrofit.Builder()
-            .baseUrl("https://www.themealdb.com/") // API base URL
-            .addConverterFactory(GsonConverterFactory.create()) // convert JSON into Kotlin classes
-            .build()
-
-        // Create an implementation of the MealDbApi interface
-        mealDbApi = retrofit.create(MealDbApi::class.java)
-    }
+    data class Recipe(val id: String, val name: String, val imageUrl: String)
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
-        // Inflate the fragment layout
         val view = inflater.inflate(R.layout.fragment_recipes, container, false)
 
-        // Connect layout views to Kotlin variables
-        recyclerView = view.findViewById(R.id.recycler_view_recipes)
-        searchBar = view.findViewById(R.id.search_bar)
-        searchView = view.findViewById(R.id.search_view)
+        searchBar = view.findViewById(R.id.searchBar)
+        searchButton = view.findViewById(R.id.searchButton)
+        recipeGrid = view.findViewById(R.id.recipeList)
 
-        // Set up RecyclerView appearance and adapter
-        setupRecyclerView()
+        val adapter = RecipeAdapter()
+        recipeGrid.adapter = adapter
 
-        // Set up search functionality
-        setupSearch()
-
-        // Load default recipes only when the fragment is first created
-        if (savedInstanceState == null) {
-            fetchRecipesByFirstLetter("a") // Show recipes starting with "a" initially
+        searchButton.setOnClickListener {
+            val query = searchBar.text.toString()
+            if (query.isNotEmpty()) searchRecipes(query, adapter)
         }
+
+        searchBar.setOnEditorActionListener { _, _, _ ->
+            val query = searchBar.text.toString()
+            if (query.isNotEmpty()) searchRecipes(query, adapter)
+            true
+        }
+
+        recipeGrid.setOnItemClickListener { _, _, position, _ ->
+            showRecipeDetails(recipes[position].id)
+        }
+
+        // load variety of recipes from multiple letters
+        loadVariety(adapter)
 
         return view
     }
 
-    private fun setupRecyclerView() {
-        // Initialize adapter with empty list until data loads
-        recipeAdapter = RecipeAdapter(emptyList())
-
-        // Attach adapter to the RecyclerView
-        recyclerView.adapter = recipeAdapter
-
-        // Display recipes in a 2-column grid
-        recyclerView.layoutManager = GridLayoutManager(context, 2)
-    }
-
-    private fun setupSearch() {
-        // Connect the SearchView with the SearchBar interaction
-        searchView.setupWithSearchBar(searchBar)
-
-        // Trigger search when user presses the search button on the keyboard
-        searchView.editText.setOnEditorActionListener { _, _, _ ->
-            val query = searchView.text.toString()
-
-            // Make API call only if input is not empty
-            if (query.isNotEmpty()) {
-                searchRecipesByName(query)
+    private fun loadVariety(adapter: RecipeAdapter) {
+        Thread {
+            val all = mutableListOf<Recipe>()
+            for (letter in listOf("b", "c", "s")) {
+                try {
+                    val url = URL("https://www.themealdb.com/api/json/v1/1/search.php?f=$letter")
+                    val conn = url.openConnection() as HttpURLConnection
+                    val json = JSONObject(conn.inputStream.bufferedReader().readText())
+                    json.optJSONArray("meals")?.let { meals ->
+                        for (i in 0 until meals.length()) {
+                            val meal = meals.getJSONObject(i)
+                            all.add(Recipe(
+                                meal.getString("idMeal"),
+                                meal.getString("strMeal"),
+                                meal.getString("strMealThumb")
+                            ))
+                        }
+                    }
+                } catch (e: Exception) { }
             }
-
-            // Collapse the search bar UI after submitting
-            searchView.hide()
-            true
-        }
+            activity?.runOnUiThread {
+                recipes.clear()
+                recipes.addAll(all)
+                adapter.notifyDataSetChanged()
+            }
+        }.start()
     }
 
-    private fun convertMealsToRecipes(meals: List<Meal>): List<Recipe> {
-        return meals.map { meal ->
-            Recipe(
-                id = meal.id,
-                name = meal.name,
-                description = "",
-                imageUrl = meal.imageUrl ?: ""
-            )
-        }
+    private fun searchRecipes(query: String, adapter: RecipeAdapter) {
+        Thread {
+            try {
+                val url = URL("https://www.themealdb.com/api/json/v1/1/search.php?s=$query")
+                val conn = url.openConnection() as HttpURLConnection
+                val response = conn.inputStream.bufferedReader().readText()
+
+                val json = JSONObject(response)
+                val meals = json.optJSONArray("meals")
+
+                activity?.runOnUiThread {
+                    recipes.clear()
+
+                    if (meals != null) {
+                        for (i in 0 until meals.length()) {
+                            val meal = meals.getJSONObject(i)
+                            recipes.add(Recipe(
+                                meal.getString("idMeal"),
+                                meal.getString("strMeal"),
+                                meal.getString("strMealThumb")
+                            ))
+                        }
+                        adapter.notifyDataSetChanged()
+                    } else {
+                        Toast.makeText(requireContext(), "No recipes found", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } catch (e: Exception) {
+                activity?.runOnUiThread {
+                    Toast.makeText(requireContext(), "Error loading recipes", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }.start()
     }
 
-    private fun fetchRecipesByFirstLetter(letter: String) {
-        // Make API request for meals starting with a specific letter
-        mealDbApi.listMealsByFirstLetter(letter)
-            .enqueue(object : Callback<MealDbResponse> {
+    private fun showRecipeDetails(id: String) {
+        Thread {
+            try {
+                val url = URL("https://www.themealdb.com/api/json/v1/1/lookup.php?i=$id")
+                val conn = url.openConnection() as HttpURLConnection
+                val response = conn.inputStream.bufferedReader().readText()
 
-                override fun onResponse(
-                    call: Call<MealDbResponse>,
-                    response: Response<MealDbResponse>
-                ) {
-                    // If successful, update RecyclerView with meal data
-                    if (response.isSuccessful) {
-                        val meals = response.body()?.meals ?: emptyList()
-                        recipeAdapter.updateData(convertMealsToRecipes(meals))
+                val json = JSONObject(response)
+                val meal = json.getJSONArray("meals").getJSONObject(0)
+
+                val name = meal.getString("strMeal")
+                val inst = meal.getString("strInstructions")
+                val imageUrl = meal.getString("strMealThumb")
+
+                val ingredientsList = StringBuilder()
+                for (i in 1..20) {
+                    val ingredient = meal.optString("strIngredient$i", "")
+                    val measure = meal.optString("strMeasure$i", "")
+                    if (ingredient.isNotEmpty()) {
+                        ingredientsList.append("• $ingredient ($measure)\n")
                     }
                 }
 
-                override fun onFailure(call: Call<MealDbResponse>, t: Throwable) {
-                    // Log error if API request fails
-                    Log.e("RecipesFragment", "Failed to fetch recipes", t)
+                activity?.runOnUiThread {
+                    showDetailScreen(name, imageUrl, ingredientsList.toString(), inst)
                 }
-            })
+            } catch (e: Exception) {
+                activity?.runOnUiThread {
+                    Toast.makeText(requireContext(), "Error loading details", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }.start()
     }
 
-    private fun searchRecipesByName(query: String) {
-        // API call to search meals by name
-        mealDbApi.searchByName(query)
-            .enqueue(object : Callback<MealDbResponse> {
+    private fun showDetailScreen(name: String, imageUrl: String, ingredientsList: String, inst: String) {
+        val inflater = LayoutInflater.from(requireContext())
+        detailView = inflater.inflate(R.layout.recipe_detail, null)
 
-                override fun onResponse(
-                    call: Call<MealDbResponse>,
-                    response: Response<MealDbResponse>
-                ) {
-                    // Replace list data with search results
-                    if (response.isSuccessful) {
-                        val meals = response.body()?.meals ?: emptyList()
-                        recipeAdapter.updateData(convertMealsToRecipes(meals))
-                    }
-                }
+        val recipeName = detailView.findViewById<TextView>(R.id.recipeName)
+        val recipeImage = detailView.findViewById<ImageView>(R.id.recipeImage)
+        val ingredients = detailView.findViewById<TextView>(R.id.ingredients)
+        val instructions = detailView.findViewById<TextView>(R.id.instructions)
+        val backButton = detailView.findViewById<Button>(R.id.backButton)
 
-                override fun onFailure(call: Call<MealDbResponse>, t: Throwable) {
-                    // Log error if search fails
-                    Log.e("RecipesFragment", "Failed to search recipes", t)
+        recipeName.text = name
+        ingredients.text = ingredientsList
+        instructions.text = inst
+
+        loadImage(imageUrl, recipeImage)
+
+        backButton.setOnClickListener {
+            (view as ViewGroup).removeView(detailView)
+            searchBar.visibility = View.VISIBLE
+            searchButton.visibility = View.VISIBLE
+            recipeGrid.visibility = View.VISIBLE
+        }
+
+        searchBar.visibility = View.GONE
+        searchButton.visibility = View.GONE
+        recipeGrid.visibility = View.GONE
+        (view as ViewGroup).addView(detailView)
+    }
+
+    private fun loadImage(imageUrl: String, imageView: ImageView) {
+        Thread {
+            try {
+                val url = URL(imageUrl)
+                val conn = url.openConnection() as HttpURLConnection
+                val bitmap = android.graphics.BitmapFactory.decodeStream(conn.inputStream)
+                activity?.runOnUiThread {
+                    imageView.setImageBitmap(bitmap)
                 }
-            })
+            } catch (e: Exception) {
+                // Image failed to load
+            }
+        }.start()
+    }
+
+    inner class RecipeAdapter : BaseAdapter() {
+        override fun getCount() = recipes.size
+        override fun getItem(position: Int) = recipes[position]
+        override fun getItemId(position: Int) = position.toLong()
+
+        override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+            val view = convertView ?: LayoutInflater.from(requireContext())
+                .inflate(R.layout.recipe_card, parent, false)
+
+            val recipe = recipes[position]
+            val nameView = view.findViewById<TextView>(R.id.recipe_name)
+            val imageView = view.findViewById<ImageView>(R.id.recipe_image)
+
+            nameView.text = recipe.name
+            loadImage(recipe.imageUrl, imageView)
+
+            return view
+        }
     }
 }

@@ -2,9 +2,9 @@
     <string name="app_name">MoblieProject</string>
     <string name="app_version">1.0.0</string>
     <string name="app_build">1</string>
-    <string name="google_map_key">AIzaSyBkWalcuxSd2vw5aBh6l1QhmSshiPMjIlA</string>
+    <string name="google_map_key">AIzaSyACIwp7A2y7zSNXEM_COGzP2Y__A9UFZg0</string>
     <string name="recipe_image_description">Image of the recipe</string>
-    <string name="login_app_name">GroceryHelper</string>
+    <string name="login_app_name">MealCart</string>
     <string name="login_app_subtitle">Smart shopping, better cooking</string>
     <string name="login_welcome_back">Welcome back</string>
     <string name="login_sign_in_prompt">Login to your account to continue</string>

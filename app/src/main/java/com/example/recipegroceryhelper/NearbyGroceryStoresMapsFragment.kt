@@ -157,6 +157,14 @@ class NearbyGroceryStoresMapsFragment : Fragment() {
 
         //search for places that match the search request
         placesClient.searchNearby(searchRequest).addOnCompleteListener { task ->
+            val groceryStoreCount = task.result.places.size
+
+            // Display message showing how many stores were found
+            Toast.makeText(
+                requireContext(),
+                "Found $groceryStoreCount grocery stores nearby",
+                Toast.LENGTH_SHORT
+            ).show()
            //check if search was successful and results not null
             if (task.isSuccessful && task.result != null) {
                 //loop through each grocery store in search results

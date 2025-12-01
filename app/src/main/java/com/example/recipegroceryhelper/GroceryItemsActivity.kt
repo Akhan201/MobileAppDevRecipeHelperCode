@@ -2,11 +2,17 @@ package com.example.recipegroceryhelper
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
+import android.view.LayoutInflater
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.ListView
 import android.widget.TextView
 import android.widget.Toast
@@ -20,9 +26,13 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
+import org.json.JSONObject
 import java.io.File
+import java.net.HttpURLConnection
+import java.net.URL
+import kotlin.math.abs
 
-class GroceryItemsActivity : AppCompatActivity() {
+class GroceryItemsActivity : AppCompatActivity(), SensorEventListener {
 
     // data class to represent a grocery item
     data class GroceryItem(
@@ -48,6 +58,13 @@ class GroceryItemsActivity : AppCompatActivity() {
 
     // URI for captured photo
     private var photoUri: Uri? = null
+
+    // shake sensor variables
+    private lateinit var sensorManager: SensorManager
+    private var lastShakeTime = System.currentTimeMillis()
+    private var lastX = 0f
+    private var lastY = 0f
+    private var lastZ = 0f
 
     // request camera permission and launch camera if granted
     private val permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
@@ -79,6 +96,10 @@ class GroceryItemsActivity : AppCompatActivity() {
         groceryListId = intent.getStringExtra("LIST_ID") ?: ""
         groceryListName = intent.getStringExtra("LIST_NAME") ?: "Grocery List"
 
+        // set up shake sensor using TYPE_ROTATION_VECTOR
+        sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
+        val sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+        sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL)
 
         setupViews()
         getItems()
@@ -245,5 +266,108 @@ class GroceryItemsActivity : AppCompatActivity() {
             // reference to the item in the database
             .child("users/$userId/groceryLists/$groceryListId/items/${item.id}")
             .removeValue()
+    }
+
+    // shake sensor listener - using TYPE_ROTATION_VECTOR from lecture
+    override fun onSensorChanged(event: SensorEvent) {
+        // rotation about x, y, z axes
+        val x = event.values[0]
+        val y = event.values[1]
+        val z = event.values[2]
+
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastShakeTime > 1000) {
+            // detect shake by measuring rotation changes
+            if (abs(lastX - x) > 0.5f || abs(lastY - y) > 0.5f || abs(lastZ - z) > 0.5f) {
+                lastShakeTime = currentTime
+                generateRecipe()
+            }
+        }
+
+        // always update last values
+        lastX = x
+        lastY = y
+        lastZ = z
+    }
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+        // not needed for this implementation
+    }
+
+    // generate recipe using all grocery items
+    private fun generateRecipe() {
+        if (items.isEmpty()) return
+        Toast.makeText(this, "🔍 Finding recipe...", Toast.LENGTH_SHORT).show()
+        Thread {
+            try {
+                val url = URL("https://www.themealdb.com/api/json/v1/1/search.php?s=${items[0].name}")
+                val conn = url.openConnection() as HttpURLConnection
+                val json = JSONObject(conn.inputStream.bufferedReader().readText())
+                val meals = json.optJSONArray("meals") ?: return@Thread
+
+                if (meals.length() > 0) {
+                    var bestRecipe = meals.getJSONObject(0)
+                    var bestMatchCount = 0
+
+                    for (i in 0 until meals.length()) {
+                        val meal = meals.getJSONObject(i)
+                        val matchCount = items.count { groceryItem ->
+                            (1..20).any { j ->
+                                meal.optString("strIngredient$j", "").lowercase()
+                                    .contains(groceryItem.name.lowercase())
+                            }
+                        }
+                        if (matchCount > bestMatchCount) {
+                            bestMatchCount = matchCount
+                            bestRecipe = meal
+                        }
+                    }
+                    showRecipe(bestRecipe)
+                }
+            } catch (e: Exception) {}
+        }.start()
+    }
+
+    // show recipe detail
+    private fun showRecipe(meal: JSONObject) {
+        val name = meal.getString("strMeal")
+        val inst = meal.getString("strInstructions")
+        val imageUrl = meal.getString("strMealThumb")
+        val ingredientsList = StringBuilder()
+        for (i in 1..20) {
+            val ingredient = meal.optString("strIngredient$i", "")
+            val measure = meal.optString("strMeasure$i", "")
+            if (ingredient.isNotEmpty()) {
+                ingredientsList.append("• $ingredient ($measure)\n")
+            }
+        }
+        runOnUiThread {
+            val view = LayoutInflater.from(this).inflate(R.layout.recipe_detail, null)
+            view.findViewById<TextView>(R.id.recipeName).text = "✨ $name"
+            view.findViewById<TextView>(R.id.ingredients).text = ingredientsList.toString()
+            view.findViewById<TextView>(R.id.instructions).text = inst
+            view.findViewById<Button>(R.id.backButton).setOnClickListener { recreate() }
+            Thread {
+                try {
+                    val conn = URL(imageUrl).openConnection() as HttpURLConnection
+                    val bitmap = android.graphics.BitmapFactory.decodeStream(conn.inputStream)
+                    runOnUiThread { view.findViewById<ImageView>(R.id.recipeImage).setImageBitmap(bitmap) }
+                } catch (e: Exception) {}
+            }.start()
+            setContentView(view)
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // unregister sensor listener when activity pauses
+        sensorManager.unregisterListener(this)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // register sensor listener when activity resumes
+        val sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+        sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL)
     }
 }
